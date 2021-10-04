@@ -8,7 +8,7 @@
 import Foundation
 
 public extension JSONDecoder {
-    public static var `default`: JSONDecoder {
+    static var `default`: JSONDecoder {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .useDefaultKeys
         return decoder

@@ -17,13 +17,20 @@ protocol NetworkClientProvider {
     ///  - request: Defines a network request with all required information
     /// - Returns: A publisher with either Decodable Value or Error
     @available(OSX 10.15, iOS 13, tvOS 13.0, watchOS 6.0, *)
-    func performRequest<Value: SelfDecodable>(_ request: Request) -> AnyPublisher<Value, Error>
+    func performRequest<Value: SelfDecodable>(_ request: RequestTask) -> AnyPublisher<Value, Error>
+    
+    /// Performs the given network request,
+    /// - Parameters:
+    ///  - request: Defines a network request with all required information
+    /// - Returns: A publisher with either Decodable Value or Error
+    @available(OSX 12.0, iOS 15, tvOS 15.0, watchOS 8.0, *)
+    func performRequest<Value: SelfDecodable>(_ request: RequestTask) async -> Result<Value, Error>
     
     /// Performs the given network request
     /// - Parameters:
     ///  - request: Defines a network request with all required information
     ///  - completion: A completion block returning a Result with either Value or Error. All errors are parsed to NetworkError
-    func performRequest<Value: SelfDecodable>(_ request: Request, completion: @escaping ResultCompletion<Value>)
+    func performRequest<Value: SelfDecodable>(_ request: RequestTask, completion: @escaping ResultCompletion<Value>)
 }
 
 class NetworkClient {
@@ -42,10 +49,11 @@ class NetworkClient {
 }
 
 extension NetworkClient: NetworkClientProvider {
-    func performRequest<Value>(_ request: Request, completion: @escaping ResultCompletion<Value>) where Value : SelfDecodable {
+    func performRequest<Value>(_ request: RequestTask, completion: @escaping ResultCompletion<Value>) where Value : SelfDecodable {
         guard let request = try? request.urlRequest() else {
             return completion(.failure(RequestError.invalidRequest))
         }
+        
         urlSession.dataTask(with: request) { data, response, error in
             guard error == nil else {
                 return completion(.failure(RequestError.invalidRequest))
@@ -59,17 +67,41 @@ extension NetworkClient: NetworkClientProvider {
                 return completion(.failure(RequestError.httpError(response.statusCode)))
             }
             
-            let decoder: JSONDecoder = Value.decoder ?? .default
-            guard let value = try? decoder.decode(Value.self, from: data) else {
+            guard let value = try? Value.decoder.decode(Value.self, from: data) else {
                 return completion(.failure(RequestError.decodingError))
             }
             
             return completion(.success(value))
+        }.resume()
+    }
+    
+    @available(OSX 12.0, iOS 15, tvOS 15.0, watchOS 8.0, *)
+    func performRequest<Value>(_ request: RequestTask) async -> Result<Value, Error> where Value : SelfDecodable {
+        guard let request = try? request.urlRequest() else {
+            return .failure(RequestError.invalidRequest)
         }
+        
+        guard let sessionResponse = try? await urlSession.data(for: request) else {
+            return .failure(RequestError.invalidRequest)
+        }
+        
+        guard let response = sessionResponse.1 as? HTTPURLResponse else {
+            return .failure(RequestError.unknownError)
+        }
+        
+        guard 200..<300 ~= response.statusCode else {
+            return .failure(RequestError.httpError(response.statusCode))
+        }
+        
+        guard let value = try? Value.decoder.decode(Value.self, from: sessionResponse.0) else {
+            return .failure(RequestError.decodingError)
+        }
+        
+        return .success(value)
     }
     
     @available(OSX 10.15, iOS 13, tvOS 13.0, watchOS 6.0, *)
-    func performRequest<Value: SelfDecodable>(_ request: Request) -> AnyPublisher<Value, Error> {
+    func performRequest<Value: SelfDecodable>(_ request: RequestTask) -> AnyPublisher<Value, Error> {
         guard let networkRequest = try? request.urlRequest() else {
             return .fail(RequestError.invalidRequest)
         }
@@ -87,7 +119,7 @@ extension NetworkClient: NetworkClientProvider {
                 }
                 return .just(data)
             }
-            .decode(type: Value.self, decoder: Value.decoder ?? .default)
+            .decode(type: Value.self, decoder: Value.decoder)
             .mapError { RequestError.handleError($0) }
             .eraseToAnyPublisher()
     }

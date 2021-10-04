@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol SelfDecodable: Decodable {
-    static var decoder: JSONDecoder? { get }
+public protocol SelfDecodable: Decodable {
+    static var decoder: JSONDecoder { get }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum RequestError: LocalizedError, Equatable {
+public enum RequestError: LocalizedError, Equatable {
     case invalidRequest
     case badRequest
     case unauthorized
@@ -21,7 +21,7 @@ enum RequestError: LocalizedError, Equatable {
     case unknownError
 }
 
-extension RequestError {
+public extension RequestError {
     /// Parses a HTTP StatusCode and returns a proper error
     /// - Parameter statusCode: HTTP status code
     /// - Returns: Mapped Error
