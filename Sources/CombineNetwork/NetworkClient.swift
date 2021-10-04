@@ -51,24 +51,24 @@ class NetworkClient {
 extension NetworkClient: NetworkClientProvider {
     func performRequest<Value>(_ request: RequestTask, completion: @escaping ResultCompletion<Value>) where Value : SelfDecodable {
         guard let request = try? request.urlRequest() else {
-            return completion(.failure(RequestError.invalidRequest))
+            return completion(.failure(NetworkError.invalidRequest))
         }
         
         urlSession.dataTask(with: request) { data, response, error in
             guard error == nil else {
-                return completion(.failure(RequestError.invalidRequest))
+                return completion(.failure(NetworkError.invalidRequest))
             }
             
             guard let response = response as? HTTPURLResponse, let data = data else {
-                return completion(.failure(RequestError.unknownError))
+                return completion(.failure(NetworkError.unknownError))
             }
             
             guard 200..<300 ~= response.statusCode else {
-                return completion(.failure(RequestError.httpError(response.statusCode)))
+                return completion(.failure(NetworkError.httpError(response.statusCode)))
             }
             
             guard let value = try? Value.decoder.decode(Value.self, from: data) else {
-                return completion(.failure(RequestError.decodingError))
+                return completion(.failure(NetworkError.decodingError))
             }
             
             return completion(.success(value))
@@ -78,23 +78,23 @@ extension NetworkClient: NetworkClientProvider {
     @available(OSX 12.0, iOS 15, tvOS 15.0, watchOS 8.0, *)
     func performRequest<Value>(_ request: RequestTask) async -> Result<Value, Error> where Value : SelfDecodable {
         guard let request = try? request.urlRequest() else {
-            return .failure(RequestError.invalidRequest)
+            return .failure(NetworkError.invalidRequest)
         }
         
         guard let sessionResponse = try? await urlSession.data(for: request) else {
-            return .failure(RequestError.invalidRequest)
+            return .failure(NetworkError.invalidRequest)
         }
         
         guard let response = sessionResponse.1 as? HTTPURLResponse else {
-            return .failure(RequestError.unknownError)
+            return .failure(NetworkError.unknownError)
         }
         
         guard 200..<300 ~= response.statusCode else {
-            return .failure(RequestError.httpError(response.statusCode))
+            return .failure(NetworkError.httpError(response.statusCode))
         }
         
         guard let value = try? Value.decoder.decode(Value.self, from: sessionResponse.0) else {
-            return .failure(RequestError.decodingError)
+            return .failure(NetworkError.decodingError)
         }
         
         return .success(value)
@@ -103,24 +103,24 @@ extension NetworkClient: NetworkClientProvider {
     @available(OSX 10.15, iOS 13, tvOS 13.0, watchOS 6.0, *)
     func performRequest<Value: SelfDecodable>(_ request: RequestTask) -> AnyPublisher<Value, Error> {
         guard let networkRequest = try? request.urlRequest() else {
-            return .fail(RequestError.invalidRequest)
+            return .fail(NetworkError.invalidRequest)
         }
         
         return urlSession.dataTaskPublisher(for: networkRequest)
-            .mapError { _ in RequestError.invalidRequest }
+            .mapError { _ in NetworkError.invalidRequest }
             .print()
             .flatMap { data, response -> AnyPublisher<Data, Error> in
                 guard let response = response as? HTTPURLResponse else {
-                    return .fail(RequestError.unknownError)
+                    return .fail(NetworkError.unknownError)
                 }
                 
                 guard 200..<300 ~= response.statusCode else {
-                    return .fail(RequestError.httpError(response.statusCode))
+                    return .fail(NetworkError.httpError(response.statusCode))
                 }
                 return .just(data)
             }
             .decode(type: Value.self, decoder: Value.decoder)
-            .mapError { RequestError.handleError($0) }
+            .mapError { NetworkError.handleError($0) }
             .eraseToAnyPublisher()
     }
 }

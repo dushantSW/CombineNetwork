@@ -41,7 +41,7 @@ class MockURLProtocol: URLProtocol {
         if let response = requestHandler.response {
             client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         } else {
-            client.urlProtocol(self, didFailWithError: RequestError.invalidRequest)
+            client.urlProtocol(self, didFailWithError: NetworkError.invalidRequest)
         }
         
         if let data = requestHandler.data {

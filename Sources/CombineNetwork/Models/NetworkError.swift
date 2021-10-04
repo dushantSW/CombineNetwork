@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum RequestError: LocalizedError, Equatable {
+public enum NetworkError: LocalizedError, Equatable {
     case invalidRequest
     case badRequest
     case unauthorized
@@ -21,11 +21,11 @@ public enum RequestError: LocalizedError, Equatable {
     case unknownError
 }
 
-public extension RequestError {
+public extension NetworkError {
     /// Parses a HTTP StatusCode and returns a proper error
     /// - Parameter statusCode: HTTP status code
     /// - Returns: Mapped Error
-    static func httpError(_ statusCode: Int) -> RequestError {
+    static func httpError(_ statusCode: Int) -> NetworkError {
         switch statusCode {
         case 400: return .badRequest
         case 401: return .unauthorized
@@ -41,13 +41,13 @@ public extension RequestError {
     /// Parses URLSession Publisher errors and return proper ones
     /// - Parameter error: URLSession publisher error
     /// - Returns: Readable NetworkRequestError
-    static func handleError(_ error: Error) -> RequestError {
+    static func handleError(_ error: Error) -> NetworkError {
         switch error {
         case is Swift.DecodingError:
             return .decodingError
         case let urlError as URLError:
             return .urlSessionFailed(urlError)
-        case let error as RequestError:
+        case let error as NetworkError:
             return error
         default:
             return .unknownError

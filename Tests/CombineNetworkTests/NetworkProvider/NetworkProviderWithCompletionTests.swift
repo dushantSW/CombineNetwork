@@ -52,7 +52,7 @@ class NetworkProviderWithCompletionTests: XCTestCase {
         // THEN
         XCTAssertNotNil(result)
         XCTAssertNotNil(result!.error)
-        XCTAssertEqual(result!.error as! RequestError, .notFound)
+        XCTAssertEqual(result!.error as! NetworkError, .notFound)
     }
     
     func testThatRequestReturnsDecodableError() {
@@ -78,7 +78,7 @@ class NetworkProviderWithCompletionTests: XCTestCase {
         // THEN
         XCTAssertNotNil(result)
         XCTAssertNotNil(result!.error)
-        XCTAssertEqual(result!.error as! RequestError, .decodingError)
+        XCTAssertEqual(result!.error as! NetworkError, .decodingError)
     }
     
     func testThatRequestReturnsVoidSuccessfully() {

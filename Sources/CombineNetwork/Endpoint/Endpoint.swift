@@ -30,7 +30,7 @@ extension Endpoint {
         }
         
         guard let url = components.url else {
-            throw RequestError.invalidRequest
+            throw NetworkError.invalidRequest
         }
         
         return url
