@@ -37,12 +37,12 @@ class NetworkProviderWithAsyncTests: XCTestCase {
         let response = HTTPURLResponse(url: url, statusCode: 404, httpVersion: nil, headerFields: nil)
         MockURLProtocol.requestHandler = (Data(invalidJSON.utf8), response)
         
-        // WHEN
-        let result: Result<TestDecodable, Error> = await networkClient.performRequest(Request(endpoint: endpoint))
-        
-        // THEN
-        XCTAssertNotNil(result.error)
-        XCTAssertEqual(result.error as! NetworkError, .notFound)
+        do {
+            let _: TestDecodable = try await networkClient.performRequest(Request(host: .default, endpoint: endpoint))
+        } catch {
+            XCTAssertNotNil(error)
+            XCTAssertEqual(error as! NetworkError, .notFound)
+        }
     }
     
     func testThatRequestReturnsDecodableError() async {
@@ -52,12 +52,12 @@ class NetworkProviderWithAsyncTests: XCTestCase {
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)
         MockURLProtocol.requestHandler = (Data(invalidJSON.utf8), response)
         
-        // WHEN
-        let result: Result<TestDecodable, Error> = await networkClient.performRequest(Request(endpoint: endpoint))
-        
-        // THEN
-        XCTAssertNotNil(result.error)
-        XCTAssertEqual(result.error as! NetworkError, .decodingError)
+        do {
+            let _: TestDecodable = try await networkClient.performRequest(Request(host: .default, endpoint: endpoint))
+        } catch {
+            XCTAssertNotNil(error)
+            XCTAssertEqual(error as! NetworkError, .decodingError)
+        }
     }
     
     func testThatRequestReturnsVoidSuccessfully() async throws {
@@ -67,16 +67,13 @@ class NetworkProviderWithAsyncTests: XCTestCase {
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)
         MockURLProtocol.requestHandler = (Data(validJSON.utf8), response)
         
-        // WHEN
-        let request = Request(endpoint: endpoint)
-        let result: Result<TestDecodable, Error> = await networkClient.performRequest(request)
-        
-        // THEN
-        XCTAssertTrue(result.isSuccess)
-        
-        let decodable = try result.get()
-        XCTAssertNotNil(decodable)
-        XCTAssertEqual(decodable.firstName, "Dushant")
-        XCTAssertEqual(decodable.lastName, "Singh")
+        do {
+            let request = Request(host: .default, endpoint: endpoint)
+            let result: TestDecodable = try await networkClient.performRequest(request)
+            XCTAssertEqual(result.firstName, "Dushant")
+            XCTAssertEqual(result.lastName, "Singh")
+        } catch {
+            XCTFail("Error occured while expecting success response")
+        }
     }
 }

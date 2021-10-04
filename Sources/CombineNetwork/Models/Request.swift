@@ -10,7 +10,7 @@ import Foundation
 /// Defines the structure of a network request
 struct Request: RequestTask {
     let scheme: URLScheme = .https
-    let host: URLHost = .default
+    let host: URLHost
     let endpoint: Endpoint
     let method: HTTPMethod = .get
     let contentType: ContentType = .json

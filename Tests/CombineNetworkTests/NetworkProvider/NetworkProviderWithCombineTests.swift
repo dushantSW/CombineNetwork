@@ -46,7 +46,7 @@ class NetworkProviderWithCombineTests: XCTestCase {
         
         // WHEN
         var result: Result<TestDecodable, Error>?
-        networkClient.performRequest(Request(endpoint: endpoint))
+        networkClient.performRequest(Request(host: .default, endpoint: endpoint))
             .map { testDecodable -> Result<TestDecodable, Error> in .success(testDecodable)}
             .catch { error -> AnyPublisher<Result<TestDecodable, Error>, Never> in .just(.failure(error)) }
             .sink { result = $0; expectation.fulfill() }
@@ -73,7 +73,7 @@ class NetworkProviderWithCombineTests: XCTestCase {
         
         // WHEN
         var result: Result<TestDecodable, Error>?
-        networkClient.performRequest(Request(endpoint: endpoint))
+        networkClient.performRequest(Request(host: .default, endpoint: endpoint))
             .map { testDecodable -> Result<TestDecodable, Error> in .success(testDecodable)}
             .catch { error -> AnyPublisher<Result<TestDecodable, Error>, Never> in .just(.failure(error)) }
             .sink { result = $0; expectation.fulfill() }
@@ -98,7 +98,7 @@ class NetworkProviderWithCombineTests: XCTestCase {
         
         // WHEN
         var result: Result<TestDecodable, Error>?
-        networkClient.performRequest(Request(endpoint: endpoint))
+        networkClient.performRequest(Request(host: .default, endpoint: endpoint))
             .map { testDecodable -> Result<TestDecodable, Error> in .success(testDecodable)}
             .catch { error -> AnyPublisher<Result<TestDecodable, Error>, Never> in .just(.failure(error)) }
             .sink { result = $0; expectation.fulfill() }

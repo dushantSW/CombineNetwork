@@ -43,7 +43,7 @@ class NetworkProviderWithCompletionTests: XCTestCase {
         
         // WHEN
         var result: Result<TestDecodable, Error>?
-        networkClient.performRequest(Request(endpoint: endpoint)) { (completionResult: Result<TestDecodable, Error>) in
+        networkClient.performRequest(Request(host: .default, endpoint: endpoint)) { (completionResult: Result<TestDecodable, Error>) in
             result = completionResult
             expectation.fulfill()
         }
@@ -69,7 +69,7 @@ class NetworkProviderWithCompletionTests: XCTestCase {
         
         // WHEN
         var result: Result<TestDecodable, Error>?
-        networkClient.performRequest(Request(endpoint: endpoint)) { (completionResult: Result<TestDecodable, Error>) in
+        networkClient.performRequest(Request(host: .default, endpoint: endpoint)) { (completionResult: Result<TestDecodable, Error>) in
             result = completionResult
             expectation.fulfill()
         }
@@ -93,7 +93,7 @@ class NetworkProviderWithCompletionTests: XCTestCase {
         
         // WHEN
         var result: Result<TestDecodable, Error>?
-        networkClient.performRequest(Request(endpoint: endpoint)) { (completionResult: Result<TestDecodable, Error>) in
+        networkClient.performRequest(Request(host: .default, endpoint: endpoint)) { (completionResult: Result<TestDecodable, Error>) in
             result = completionResult
             expectation.fulfill()
         }

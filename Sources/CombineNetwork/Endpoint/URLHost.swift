@@ -14,11 +14,3 @@ public struct URLHost: RawRepresentable {
         self.rawValue = rawValue
     }
 }
-
-public extension URLHost {
-    static var standard: Self {
-        return URLHost(rawValue: "google.com")
-    }
-    
-    static var `default` = standard
-}

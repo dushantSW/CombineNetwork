@@ -24,7 +24,7 @@ protocol NetworkClientProvider {
     ///  - request: Defines a network request with all required information
     /// - Returns: A publisher with either Decodable Value or Error
     @available(OSX 12.0, iOS 15, tvOS 15.0, watchOS 8.0, *)
-    func performRequest<Value: SelfDecodable>(_ request: RequestTask) async -> Result<Value, Error>
+    func performRequest<Value: SelfDecodable>(_ request: RequestTask) async throws -> Value
     
     /// Performs the given network request
     /// - Parameters:
@@ -76,28 +76,28 @@ extension NetworkClient: NetworkClientProvider {
     }
     
     @available(OSX 12.0, iOS 15, tvOS 15.0, watchOS 8.0, *)
-    func performRequest<Value>(_ request: RequestTask) async -> Result<Value, Error> where Value : SelfDecodable {
+    func performRequest<Value>(_ request: RequestTask) async throws -> Value where Value : SelfDecodable {
         guard let request = try? request.urlRequest() else {
-            return .failure(NetworkError.invalidRequest)
+            throw NetworkError.invalidRequest
         }
         
         guard let sessionResponse = try? await urlSession.data(for: request) else {
-            return .failure(NetworkError.invalidRequest)
+            throw NetworkError.invalidRequest
         }
         
         guard let response = sessionResponse.1 as? HTTPURLResponse else {
-            return .failure(NetworkError.unknownError)
+            throw NetworkError.unknownError
         }
         
         guard 200..<300 ~= response.statusCode else {
-            return .failure(NetworkError.httpError(response.statusCode))
+            throw NetworkError.httpError(response.statusCode)
         }
         
         guard let value = try? Value.decoder.decode(Value.self, from: sessionResponse.0) else {
-            return .failure(NetworkError.decodingError)
+            throw NetworkError.decodingError
         }
         
-        return .success(value)
+        return value
     }
     
     @available(OSX 10.15, iOS 13, tvOS 13.0, watchOS 6.0, *)
